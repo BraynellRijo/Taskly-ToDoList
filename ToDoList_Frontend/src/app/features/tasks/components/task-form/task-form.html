@@ -1,0 +1,77 @@
+<div class="form-wrapper">
+
+  <div class="form-header">
+    <div>
+      <h2 class="form-title">{{ isEditing ? 'Edit Task' : 'New Task' }}</h2>
+      <p class="form-subtitle">{{ isEditing ? 'Update the task details below' : 'Fill in the details to create a task' }}</p>
+    </div>
+    <button class="form-close" (click)="cancel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <form class="form" [formGroup]="taskForm" (ngSubmit)="submit()">
+
+    <!-- Title -->
+    <div class="form-field">
+      <label class="form-label" for="title">Title</label>
+      <input
+        id="title"
+        class="form-input"
+        [class.form-input--error]="hasError('title')"
+        type="text"
+        placeholder="e.g. Design homepage mockup"
+        formControlName="title"
+      />
+      <span class="form-error" *ngIf="hasError('title')">
+        Title is required (min 3 characters)
+      </span>
+    </div>
+
+    <!-- Description -->
+    <div class="form-field">
+      <label class="form-label" for="description">Description</label>
+      <textarea
+        id="description"
+        class="form-input form-input--textarea"
+        [class.form-input--error]="hasError('description')"
+        placeholder="Describe the task in detail..."
+        formControlName="description"
+        rows="3"
+      ></textarea>
+      <span class="form-error" *ngIf="hasError('description')">
+        Description is required
+      </span>
+    </div>
+
+    <!-- Due Date -->
+    <div class="form-field">
+      <label class="form-label" for="dueDate">Due Date</label>
+      <input
+        id="dueDate"
+        class="form-input form-input--date"
+        [class.form-input--error]="hasError('dueDate')"
+        type="date"
+        formControlName="dueDate"
+      />
+      <span class="form-error" *ngIf="hasError('dueDate')">
+        Please select a valid date
+      </span>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn-submit" [disabled]="taskForm.invalid">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ isEditing ? 'Save Changes' : 'Create Task' }}
+      </button>
+    </div>
+
+  </form>
+</div>

@@ -1,0 +1,111 @@
+<div class="dashboard">
+
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Taskly</span>
+    </div>
+    <nav class="sidebar__nav">
+      <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active"
+        [routerLinkActiveOptions]="{exact: true}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>All Tasks</span>
+      </a>
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{filter: 'pending'}" routerLinkActive="nav-item--active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Pending</span>
+      </a>
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{filter: 'completed'}" routerLinkActive="nav-item--active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Completed</span>
+      </a>
+    </nav>
+    <div class="sidebar__footer">
+      <div class="user-avatar">BR</div>
+      <div class="user-info">
+        <span class="user-name">Braynell Rijo</span>
+        <span class="user-role">Developer</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main__header">
+      <div class="header__left">
+        <h1 class="header__title">Good morning, Braynell 👋</h1>
+        <p class="header__subtitle">Here's what's on your plate today</p>
+      </div>
+      <button class="btn-new" (click)="goToNewTask()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Task
+      </button>
+    </header>
+
+    <section class="stats">
+      <div class="stat-card stat-card--total">
+        <span class="stat-card__label">Total Tasks</span>
+        <span class="stat-card__value">{{ totalTasks }}</span>
+        <div class="stat-card__bar"><div class="stat-card__fill" [style.width.%]="100"></div></div>
+      </div>
+      <div class="stat-card stat-card--pending">
+        <span class="stat-card__label">Pending</span>
+        <span class="stat-card__value">{{ pendingTasks }}</span>
+        <div class="stat-card__bar"><div class="stat-card__fill" [style.width.%]="pendingPercent"></div></div>
+      </div>
+      <div class="stat-card stat-card--completed">
+        <span class="stat-card__label">Completed</span>
+        <span class="stat-card__value">{{ completedTasks }}</span>
+        <div class="stat-card__bar"><div class="stat-card__fill" [style.width.%]="completedPercent"></div></div>
+      </div>
+      <div class="stat-card stat-card--overdue">
+        <span class="stat-card__label">Overdue</span>
+        <span class="stat-card__value">{{ overdueTasks }}</span>
+        <div class="stat-card__bar"><div class="stat-card__fill" [style.width.%]="overduePercent"></div></div>
+      </div>
+    </section>
+
+    <div class="loading" *ngIf="isLoading">
+      <div class="loading__spinner"></div>
+      <span>Loading tasks...</span>
+    </div>
+
+    <div class="error-banner" *ngIf="errorMessage && !isLoading">
+      {{ errorMessage }}
+    </div>
+
+    <app-task-list
+      *ngIf="!isLoading && !errorMessage"
+      [tasks]="tasks"
+      [activeFilter]="currentFilter"
+      (onEdit)="goToEditTask($event)"
+      (onDelete)="deleteTask($event)"
+      (onComplete)="markComplete($event)">
+    </app-task-list>
+
+<div class="paginator" *ngIf="!isLoading && !errorMessage && totalPages > 1">
+  <button class="paginator__btn" (click)="prevPage()" [disabled]="currentPage === 1">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+
+  <button class="paginator__page"
+    *ngFor="let page of pages"
+    [class.paginator__page--active]="page === currentPage"
+    (click)="goToPage(page)">
+    {{ page }}
+  </button>
+
+  <button class="paginator__btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </button>
+</div>
+
+  </main>
+</div>
