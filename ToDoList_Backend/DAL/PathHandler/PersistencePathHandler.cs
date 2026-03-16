@@ -1,23 +1,28 @@
 ﻿using Domain.ENUM;
-using Domain.Interfaces;
+using Domain.Interfaces.Helpers;
 
 namespace DAL.PathHandler
 {
-    public class PersistencePathHandler
+    public class PersistencePathHandler : IPathHandler
     {
-        public string GetPersistenceFilePath(string fileName, FileType fileType)
+        public string GetPath(string fileName, FileType fileType)
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string dataDirectory = Directory.GetParent(baseDirectory)!
-                .Parent!.Parent!.Parent!.FullName;
-            string fullPath = Path.Combine(dataDirectory, 
+            string solutionDirectory = Directory.GetParent(baseDirectory)!
+                .Parent!
+                .Parent!
+                .Parent!
+                .Parent!
+                .FullName;
+            string fullPath = Path.Combine(solutionDirectory, 
+                "DAL",
                 "Persistence", 
                 fileType.ToString(),
                 $"{fileName}.{fileType}");
             return fullPath;
         }
 
-        public void VerifyDirectoryExists(string filePath)
+        public void VerifyDirectory(string filePath)
         {
             string directoryPath = Path.GetDirectoryName(filePath)!;
             if (!Directory.Exists(directoryPath))

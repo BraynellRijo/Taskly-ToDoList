@@ -8,10 +8,10 @@ namespace DAL.FileHandler
     public class JsonFileHandler : IFileHandler
     {
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly PersistencePathHandler _pathManager;
+        private readonly IPathHandler _pathManager;
         private const FileType FILE_TYPE = FileType.Json;
 
-        public JsonFileHandler()
+        public JsonFileHandler(IPathHandler pathHandler)
         {
             _jsonOptions = new JsonSerializerOptions
             {
@@ -25,8 +25,8 @@ namespace DAL.FileHandler
 
         private string GetAndEnsurePath(string fileName)
         {
-            string filePath = _pathManager.GetPersistenceFilePath(fileName, FILE_TYPE);
-            _pathManager.VerifyDirectoryExists(filePath);
+            string filePath = _pathManager.GetPath(fileName, FILE_TYPE);
+            _pathManager.VerifyDirectory(filePath);
             return filePath;
         }
         private List<T> DeserializeJson<T>(string json)

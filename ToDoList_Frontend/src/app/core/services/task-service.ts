@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TaskItemDTO } from '../models/TaskItemDTO';
 import { TaskItem } from '../models/TaskItem';
+import { PagedResult } from '../models/PagedResult';
 
 @Injectable({
   providedIn: 'root',
@@ -15,11 +16,11 @@ export class TaskService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(page: number = 1, pageSize: number = 10): Observable<TaskItem[]> {
+  getAll(page: number, pageSize: number): Observable<PagedResult<TaskItem>> {
     const params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<TaskItem[]>(this.fullURL, { params });
+    return this.http.get<PagedResult<TaskItem>>(this.fullURL, { params });
   }
 
   getById(id: number): Observable<TaskItem> {
@@ -42,26 +43,26 @@ export class TaskService {
     return this.http.patch<void>(`${this.fullURL}/${id}`, {});
   }
 
-  getCompletedTasks(page: number = 1, pageSize: number = 10): Observable<TaskItem[]> {
+  getCompletedTasks(page: number, pageSize: number): Observable<PagedResult<TaskItem>> {
     const params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<TaskItem[]>(`${this.fullURL}/completed`, { params });
+    return this.http.get<PagedResult<TaskItem>>(`${this.fullURL}/completed`, { params });
   }
 
 
-  getDueTasks(page: number = 1, pageSize: number = 10): Observable<TaskItem[]> {
+  getDueTasks(page: number, pageSize: number): Observable<PagedResult<TaskItem>> {
     const params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<TaskItem[]>(`${this.fullURL}/due`, { params });
+    return this.http.get<PagedResult<TaskItem>>(`${this.fullURL}/due`, { params });
   }
 
-  getByStatus(isCompleted: boolean, page: number = 1, pageSize: number = 10): Observable<TaskItem[]> {
+  getByStatus(isCompleted: boolean, page: number, pageSize: number): Observable<PagedResult<TaskItem>> {
     const params = new HttpParams()
       .set('isCompleted', isCompleted)
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<TaskItem[]>(`${this.fullURL}/status`, { params });
+    return this.http.get<PagedResult<TaskItem>>(`${this.fullURL}/status`, { params });
   }
 }

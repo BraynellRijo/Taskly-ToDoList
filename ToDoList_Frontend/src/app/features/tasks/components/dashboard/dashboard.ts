@@ -1,12 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { Router, RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
-
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { TaskItem } from '../../../../core/models/TaskItem';
 import { TaskService } from '../../../../core/services/task-service';
 import { TaskListComponent } from '../task-list/task-list';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,20 +14,21 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
     RouterLink,
     RouterLinkActive,
     TaskListComponent,
+    MatPaginatorModule,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
 
   tasks: TaskItem[] = [];
   isLoading = false;
   errorMessage = '';
-  currentFilter: string = 'all';
+  currentFilter = 'all';
 
-  totalItems  = 0;
-  currentPage = 1;
-  pageSize    = 10;
+  pageNumber = 0;
+  pageSize = 3;
+  length = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -38,141 +37,120 @@ export class DashboardComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.currentFilter = params['filter'] || 'all';
-      this.currentPage   = 1;  
-      this.loadByFilter();
+
+      this.pageNumber = 0;
+      this.pageSize = this.paginator?.pageSize ?? 5;
+
+      if (this.paginator) {
+        this.paginator.firstPage();
+      }
+      this.loadByFilter(1, this.pageSize);
     });
   }
 
-  loadByFilter(): void {
+  ngAfterViewInit(): void {
+    this.paginator._intl.itemsPerPageLabel = 'Items per page';
+    this.cdr.detectChanges();
+  }
+
+  loadByFilter(page: number, size: number): void {
     switch (this.currentFilter) {
-      case 'pending':   this.loadDueTasks();       break;
-      case 'completed': this.loadCompletedTasks(); break;
-      default:          this.loadTasks();           break;
+      case 'pending': this.loadDueTasks(page, size); break;
+      case 'completed': this.loadCompletedTasks(page, size); break;
+      default: this.loadTasks(page, size); break;
     }
   }
 
-  loadTasks(): void {
+  loadTasks(page: number, size: number): void {
     this.isLoading = true;
-    this.taskService.getAll(this.currentPage, this.pageSize).subscribe({
-      next: (tasks) => {
-        this.tasks      = tasks;
-        this.totalItems = tasks.length;
-        this.isLoading  = false;
+    this.taskService.getAll(page, size).subscribe({
+      next: (result) => {
+        this.tasks = result.items;
+        this.length = result.total;
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Error loading tasks.';
-        this.isLoading    = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  loadCompletedTasks(): void {
+  loadCompletedTasks(page: number, size: number): void {
     this.isLoading = true;
-    this.taskService.getCompletedTasks(this.currentPage, this.pageSize).subscribe({
-      next: (tasks) => {
-        this.tasks      = tasks;
-        this.totalItems = tasks.length;
-        this.isLoading  = false;
+    this.taskService.getCompletedTasks(page, size).subscribe({
+      next: (result) => {
+        this.tasks = result.items;
+        this.length = result.total;
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Error loading completed tasks.';
-        this.isLoading    = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  loadDueTasks(): void {
+  loadDueTasks(page: number, size: number): void {
     this.isLoading = true;
-    this.taskService.getDueTasks(this.currentPage, this.pageSize).subscribe({
-      next: (tasks) => {
-        this.tasks      = tasks;
-        this.totalItems = tasks.length;
-        this.isLoading  = false;
+    this.taskService.getDueTasks(page, size).subscribe({
+      next: (result) => {
+        this.tasks = result.items;
+        this.length = result.total;
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Error loading pending tasks.';
-        this.isLoading    = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  onPageChange(event: PageEvent): void {
-    this.currentPage = event.pageIndex + 1;
-    this.pageSize    = event.pageSize;
-    this.loadByFilter();
+  changePage(event: PageEvent): void {
+    this.pageNumber = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadByFilter(
+      event.pageIndex + 1,
+      event.pageSize
+    );
   }
 
   // ── Stats ──────────────────────────────────────
-  get totalTasks()       { return this.tasks.length; }
-  get completedTasks()   { return this.tasks.filter(t =>  t.isCompleted).length; }
-  get pendingTasks()     { return this.tasks.filter(t => !t.isCompleted).length; }
-  get overdueTasks()     { return this.tasks.filter(t => !t.isCompleted && new Date(t.dueDate) < new Date()).length; }
+  get totalTasks() { return this.length; }
+  get completedTasks() { return this.tasks.filter(t => t.isCompleted).length; }
+  get pendingTasks() { return this.tasks.filter(t => !t.isCompleted).length; }
+  get overdueTasks() { return this.tasks.filter(t => !t.isCompleted && new Date(t.dueDate) < new Date()).length; }
   get completedPercent() { return this.totalTasks ? (this.completedTasks / this.totalTasks) * 100 : 0; }
-  get pendingPercent()   { return this.totalTasks ? (this.pendingTasks   / this.totalTasks) * 100 : 0; }
-  get overduePercent()   { return this.totalTasks ? (this.overdueTasks   / this.totalTasks) * 100 : 0; }
+  get pendingPercent() { return this.totalTasks ? (this.pendingTasks / this.totalTasks) * 100 : 0; }
+  get overduePercent() { return this.totalTasks ? (this.overdueTasks / this.totalTasks) * 100 : 0; }
 
   // ── Navegación ─────────────────────────────────
-  goToNewTask(): void {
-    this.router.navigate(['/tasks/new']);
-  }
-
-  goToEditTask(task: TaskItem): void {
-    this.router.navigate(['/tasks', task.id, 'edit']);
-  }
+  goToNewTask(): void { this.router.navigate(['/tasks/new']); }
+  goToEditTask(task: TaskItem): void { this.router.navigate(['/tasks', task.id, 'edit']); }
 
   // ── Acciones ───────────────────────────────────
   deleteTask(id: number): void {
     this.taskService.deleteTask(id).subscribe({
-      next: () => this.loadByFilter(),
+      next: () => this.loadByFilter(this.pageNumber + 1, this.pageSize),
       error: (err) => console.error(err)
     });
   }
 
   markComplete(id: number): void {
     this.taskService.markTaskAsCompleted(id).subscribe({
-      next: () => this.loadByFilter(),
+      next: () => this.loadByFilter(this.pageNumber + 1, this.pageSize),
       error: (err) => console.error(err)
     });
   }
-
-
-  // ── Pagination ───────────────────────────────────
-  get totalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize) || 1;
-  }
-
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.loadByFilter();
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadByFilter();
-    }
-  }
-
-  goToPage(page: number): void {
-    this.currentPage = page;
-    this.loadByFilter();
-  }
-
 }
