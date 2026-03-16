@@ -20,7 +20,6 @@ namespace BLL.Services.TaskServices
         {
             await _taskValidation.ValidateIdForSearch(id);
             await _taskRepository.MarkTaskAsCompleted(id);
-
         }
     }
 }

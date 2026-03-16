@@ -1,4 +1,5 @@
 ﻿using Domain.DTOs;
+using Domain.Entities;
 using Domain.Interfaces.Services.TaskServices;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -32,15 +33,24 @@ namespace PL.Controllers
         {
             try
             {
-                var items = (await _taskQueryservice.GetAllAsync())
+                var items = await _taskQueryservice.GetAllAsync();
+                var total = items.Count();
+
+                var allItems = items
                     .OrderBy(t => t.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
-                    
-                var itemCounter = (items.Count); // To Do - retorno multiple de items, conteo, numero de pagina y cantidadXpagina
 
-                return Ok(items);
+                var result = new PagedResultDTO<TaskItem>() 
+                { 
+                    items = allItems,
+                    total = total,
+                    page = page,
+                    pageSize = pageSize
+                };
+
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
@@ -80,13 +90,24 @@ namespace PL.Controllers
         {
             try
             {
-                var items = (await _taskFilterService.GetCompletedTasksAsync())
+                var items = await _taskFilterService.GetCompletedTasksAsync();
+                var total = items.Count();
+
+                var allItems = items
                     .OrderBy(t => t.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .ToList(); 
+                    .ToList();
 
-                return Ok(items);
+                var result = new PagedResultDTO<TaskItem>()
+                {
+                    items = allItems,
+                    total = total,
+                    page = page,
+                    pageSize = pageSize
+                };
+
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
@@ -104,13 +125,24 @@ namespace PL.Controllers
         {
             try
             {
-                var items = (await _taskFilterService.GetDueTasksAsync())
+                var items = await _taskFilterService.GetDueTasksAsync();
+                var total = items.Count();
+
+                var allItems = items
                     .OrderBy(t => t.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
 
-                return Ok(items);
+                var result = new PagedResultDTO<TaskItem>()
+                {
+                    items = allItems,
+                    total = total,
+                    page = page,
+                    pageSize = pageSize
+                };
+
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
@@ -129,12 +161,24 @@ namespace PL.Controllers
         {
             try
             {
-                var items = (await _taskFilterService.GetTasksByStatusAsync(status))
+                var items = await _taskFilterService.GetTasksByStatusAsync(status);
+                var total = items.Count();
+
+                var allItems = items
                     .OrderBy(t => t.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
-                return Ok(items);
+
+                var result = new PagedResultDTO<TaskItem>()
+                {
+                    items = allItems,
+                    total = total,
+                    page = page,
+                    pageSize = pageSize
+                };
+
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {

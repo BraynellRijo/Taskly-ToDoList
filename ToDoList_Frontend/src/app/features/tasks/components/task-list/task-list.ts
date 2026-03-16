@@ -12,24 +12,22 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class TaskListComponent implements OnInit, OnChanges {
   @Input() tasks: TaskItem[] = [];
-  @Input() activeFilter: string = 'all';
-  @Output() onEdit = new EventEmitter<TaskItem>();
-  @Output() onDelete = new EventEmitter<number>();
+  @Input() activeFilter: string = 'all';  
+  @Output() onEdit     = new EventEmitter<TaskItem>();
+  @Output() onDelete   = new EventEmitter<number>();
   @Output() onComplete = new EventEmitter<number>();
 
   filteredTasks: TaskItem[] = [];
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.applyFilter();
+    this.filteredTasks = [...this.tasks];
   }
-  ngOnChanges(changes: SimpleChanges): void {
 
-    console.log('ngOnChanges:', changes);
-    console.log('tasks:', this.tasks);
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes['tasks'] || changes['activeFilter']) {
-      this.applyFilter();
+      this.filteredTasks = [...this.tasks];
     }
   }
 
@@ -41,16 +39,6 @@ export class TaskListComponent implements OnInit, OnChanges {
     });
   }
 
-  applyFilter(): void {
-    if (this.activeFilter === 'pending') {
-      this.filteredTasks = this.tasks.filter(t => !t.isCompleted);
-    } else if (this.activeFilter === 'completed') {
-      this.filteredTasks = this.tasks.filter(t => t.isCompleted);
-    } else {
-      this.filteredTasks = [...this.tasks];
-    }
-  }
-
   isOverdue(task: TaskItem): boolean {
     return !task.isCompleted && new Date(task.dueDate) < new Date();
   }
@@ -58,13 +46,11 @@ export class TaskListComponent implements OnInit, OnChanges {
   formatDate(dateStr: string): string {
     if (!dateStr) return 'No date';
     return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      month: 'short', day: 'numeric', year: 'numeric'
     });
   }
 
-  edit(task: TaskItem): void { this.onEdit.emit(task); }
-  delete(id: number): void { this.onDelete.emit(id); }
-  complete(id: number): void { this.onComplete.emit(id); }
+  edit(task: TaskItem):  void { this.onEdit.emit(task); }
+  delete(id: number):    void { this.onDelete.emit(id); }
+  complete(id: number):  void { this.onComplete.emit(id); }
 }

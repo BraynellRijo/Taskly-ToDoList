@@ -1,8 +1,8 @@
 using AutoMapper;
-using BLL.Services;
 using BLL.Services.TaskServices;
 using BLL.Validations;
 using DAL.FileHandler;
+using DAL.PathHandler;
 using DAL.Repositories;
 using Domain.DTOs;
 using Domain.Entities;
@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 //Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -30,29 +31,30 @@ builder.Services.AddScoped<IValidator<int>, TaskIdValidation>();
 //Validators
 builder.Services.AddScoped<ITaskValidation, TaskValidations>();
 
-//Logging   
-builder.Services.AddLogging();
-
 //AutoMapper
-var config = new MapperConfiguration(cfg => 
+var config = new MapperConfiguration(cfg =>
     cfg.AddMaps(typeof(TaskItemProfile).Assembly));
 builder.Services.AddSingleton(config.CreateMapper());
 
+//Logging   
+builder.Services.AddLogging();
+
 // Helpers
+builder.Services.AddScoped<IPathHandler, PersistencePathHandler>();
 builder.Services.AddScoped<IFileHandler, JsonFileHandler>();
 
-//Repositories
+
+// Repositories
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
-//Services
+// Services
 builder.Services.AddScoped<ITaskCommandService, TaskCommandService>();
 builder.Services.AddScoped<ITaskQueryService, TaskQueryService>();
 builder.Services.AddScoped<ITaskFilterService, TaskFilterService>();
 builder.Services.AddScoped<ITaskStatusService, TaskStatusService>();
 
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Cors
 builder.Services.AddCors(option =>
 {
     option.AddPolicy("AllowAll", builder =>
@@ -64,6 +66,7 @@ builder.Services.AddCors(option =>
 });
 
 var app = builder.Build();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

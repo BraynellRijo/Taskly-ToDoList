@@ -2,7 +2,6 @@
 
   <aside class="sidebar">
     <div class="sidebar__brand">
-      <span class="brand-dot"></span>
       <span class="brand-name">Taskly</span>
     </div>
     <nav class="sidebar__nav">
@@ -86,26 +85,16 @@
       (onComplete)="markComplete($event)">
     </app-task-list>
 
-<div class="paginator" *ngIf="!isLoading && !errorMessage && totalPages > 1">
-  <button class="paginator__btn" (click)="prevPage()" [disabled]="currentPage === 1">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="15 18 9 12 15 6"/>
-    </svg>
-  </button>
-
-  <button class="paginator__page"
-    *ngFor="let page of pages"
-    [class.paginator__page--active]="page === currentPage"
-    (click)="goToPage(page)">
-    {{ page }}
-  </button>
-
-  <button class="paginator__btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  </button>
-</div>
+<mat-paginator
+  *ngIf="!isLoading && !errorMessage"
+  [pageSizeOptions]="[3, 5, 10, 25]"
+  [length]="length"
+  [pageSize]="pageSize"
+  [pageIndex]="pageNumber"
+  showFirstLastButtons
+  aria-label="Select page"
+  (page)="changePage($event)">
+</mat-paginator>
 
   </main>
 </div>
